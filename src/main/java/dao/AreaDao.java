@@ -29,14 +29,7 @@ public class AreaDao {
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
 
             Map<String, Object> param = new HashMap<>();
-            List<Map<String,String>> res = UrlReader.getAreaUrls().stream().map(item->{
-                item = item.replace("https://tj.lianjia.com/ershoufang/","");
-                item = item.replace("/","");
-                Map<String,String> area = new HashMap<>();
-                area.put("name",item);
-                area.put("code",item);
-                return area;
-            }).collect(Collectors.toList());
+            List<Map<String,String>> res = UrlReader.getAreaInfos();
             param.put("areas", res);
             session.insert("MyMapper.batchInsertAreas", param);
         }

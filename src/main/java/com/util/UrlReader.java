@@ -24,6 +24,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 public class UrlReader {
+    public static final Map<String,String> xpathExpMap = new HashMap<>();
+    public static final String NODE_AREA_A = "node_area_a";
+    static {
+        xpathExpMap.put(NODE_AREA_A,"//div[@data-role=\"ershoufang\"]/div/a");
+
+    }
+
     public static String baseUrl = "https://tj.lianjia.com";
     public static XPath xPath = XPathFactory.newInstance().newXPath();
     public static int delayTime = 10;
@@ -55,21 +62,19 @@ public class UrlReader {
             String html = null;
             html = UrlReader.read(url).body().html();
             return xPath.evaluate(xpathExp, cleanDom(html),qName);
-        } catch (IOException | ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (XPathExpressionException e) {
+        } catch (IOException | ParserConfigurationException | XPathExpressionException e) {
             throw new RuntimeException(e);
         }
 
     }
 
-    public static Object getPathResultArrayByUrlAndXpathExpAndQName(String url , String[] xpathExp, QName[] qName){
+    public static List<NodeList> getNodeListByUrlAndXpathExpAndQName(String url , String[] xpathExp, QName[] qName){
         try {
-            List<Object> res = new ArrayList<>();
+            List<NodeList> res = new ArrayList<>();
             String html = null;
             html = UrlReader.read(url).body().html();
             for (int i = 0; i < xpathExp.length; i++) {
-                res.add(xPath.evaluate(xpathExp[i], cleanDom(html),qName[i]));
+                res.add((NodeList) xPath.evaluate(xpathExp[i], cleanDom(html),qName[i]));
             }
             return res;
         } catch (IOException | ParserConfigurationException | XPathExpressionException e) {
@@ -88,14 +93,29 @@ public class UrlReader {
     }
 
     public static List<String>  getAreaUrls(){
-        String startUrl = baseUrl + "/ershoufang/";
-        String xpathExpArea = "//div[@data-role=\"ershoufang\"]/div/a/@href";
-        NodeList pathResult = (NodeList) getPathResultByUrlAndXpathExpAndQName(startUrl,xpathExpArea,XPathConstants.NODESET);
-        List<String> areaUrls = getUrlListByNodeList(pathResult).stream().map(item-> {
-            System.out.println(item);
-            return baseUrl + item;}).collect(Collectors.toList());
-        return areaUrls;
+        return  getAreaInfos().stream().map(item->item.get("href")).collect(Collectors.toList());
     }
+
+    public static List<Map<String,String>>  getAreaInfos(){
+        List<Map<String,String>> result = new ArrayList<>();
+        String startUrl = baseUrl + "/ershoufang/";
+        String[] xpathExps = new String[]{xpathExpMap.get(NODE_AREA_A)};
+        QName[] qnames = new QName[]{XPathConstants.NODESET};
+        List<NodeList> nodeLists =getNodeListByUrlAndXpathExpAndQName(startUrl,xpathExps,qnames);
+        for (int i = 0; i < nodeLists.get(0).getLength(); i++) {
+            Map<String,String> info = new HashMap<>();
+            String hrefPath = nodeLists.get(0).item(i).getAttributes().getNamedItem("href").getNodeValue();
+            String name = nodeLists.get(0).item(i).getTextContent();
+            info.put("href", baseUrl + hrefPath);
+            info.put("name",name);
+            info.put("code",hrefPath.replace("/ershoufang/","").replace("/","").toString());
+            result.add(info);
+        }
+        return result;
+    }
+
+
+
 
     public static List<String> getStreetUrls(String areaUrl){
         String xpathExp = "//div[@data-role=\"ershoufang\"]/div[2]/a/@href";
@@ -336,6 +356,7 @@ public class UrlReader {
 
 
     public static void main(String[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        getAreaInfos();
 //        List<String> areaUrls = getAreaUrls(); // https://tj.lianjia.com/ershoufang/heping/
 //        System.out.println(areaUrls);
         // 获取某个区的所有街道url

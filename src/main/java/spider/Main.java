@@ -5,9 +5,9 @@ import service.AreaService;
 public class Main {
 
     public static void main(String[] args){
-        UrlReader.getStreetUrlByThread();
+//        UrlReader.getStreetUrlByThread();
 
-//        AreaService.initAreaData();
+        AreaService.initAreaData();
 
     }
 
