@@ -25,11 +25,14 @@ import java.util.stream.Collectors;
 
 public class UrlReader {
     public static String baseUrl = "https://tj.lianjia.com";
+    public static XPath xPath = XPathFactory.newInstance().newXPath();
+    public static int delayTime = 10;
+
+
     public static final List<String> streetUrls = new ArrayList<>();
     public static final List<String> streetPageNoUrls = new ArrayList<>();
     public static final List<String> houseUrls = new ArrayList<>();
     public static final Map<String,List<String>> houseMapper = new HashMap<>();
-
     public static final List<Object> houseInfos = new ArrayList<>();
 
     public static Document read(String url) throws IOException {
@@ -51,11 +54,25 @@ public class UrlReader {
         try {
             String html = null;
             html = UrlReader.read(url).body().html();
-            XPath xPath = XPathFactory.newInstance().newXPath();
             return xPath.evaluate(xpathExp, cleanDom(html),qName);
         } catch (IOException | ParserConfigurationException e) {
             throw new RuntimeException(e);
         } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static Object getPathResultArrayByUrlAndXpathExpAndQName(String url , String[] xpathExp, QName[] qName){
+        try {
+            List<Object> res = new ArrayList<>();
+            String html = null;
+            html = UrlReader.read(url).body().html();
+            for (int i = 0; i < xpathExp.length; i++) {
+                res.add(xPath.evaluate(xpathExp[i], cleanDom(html),qName[i]));
+            }
+            return res;
+        } catch (IOException | ParserConfigurationException | XPathExpressionException e) {
             throw new RuntimeException(e);
         }
 
@@ -73,8 +90,10 @@ public class UrlReader {
     public static List<String>  getAreaUrls(){
         String startUrl = baseUrl + "/ershoufang/";
         String xpathExpArea = "//div[@data-role=\"ershoufang\"]/div/a/@href";
-        Object pathResult = getPathResultByUrlAndXpathExpAndQName(startUrl,xpathExpArea,XPathConstants.NODESET);
-        List<String> areaUrls = getUrlListByNodeList((NodeList) pathResult).stream().map(item-> baseUrl + item).collect(Collectors.toList());
+        NodeList pathResult = (NodeList) getPathResultByUrlAndXpathExpAndQName(startUrl,xpathExpArea,XPathConstants.NODESET);
+        List<String> areaUrls = getUrlListByNodeList(pathResult).stream().map(item-> {
+            System.out.println(item);
+            return baseUrl + item;}).collect(Collectors.toList());
         return areaUrls;
     }
 
@@ -122,8 +141,6 @@ public class UrlReader {
             Map<String,Object> result = new HashMap<>();
             String html = null;
             html = UrlReader.read(url).body().html();
-            XPath xPath = XPathFactory.newInstance().newXPath();
-
             String title = "";
             String titlexPath = "//div[@class=\"sellDetailHeader\"]//div[@class=\"title\"]/h1";
             Node titleNode = (Node)xPath.evaluate(titlexPath, cleanDom(html),XPathConstants.NODE);
@@ -299,7 +316,7 @@ public class UrlReader {
         CountDownLatch countDownLatch = new CountDownLatch(list.size());
         for (int i = 0; i < list.size() ; i++) {
             try {
-                Thread.sleep(new Random().nextInt(3)*1000);
+                Thread.sleep(new Random().nextInt(3) * delayTime);
                 Constructor constructor = klass.getConstructor(CountDownLatch.class,String.class);
                 WorkThread thread = (WorkThread)constructor.newInstance(countDownLatch,list.get(i));
                 thread.start();
@@ -321,8 +338,7 @@ public class UrlReader {
     public static void main(String[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 //        List<String> areaUrls = getAreaUrls(); // https://tj.lianjia.com/ershoufang/heping/
 //        System.out.println(areaUrls);
-//
-//        // 获取某个区的所有街道url
+        // 获取某个区的所有街道url
 //        List<String> streetUrls = getStreetUrls(areaUrls.get(0));
 //        System.out.println(streetUrls);
 //        // 获取某个街道所有页码url
@@ -344,61 +360,3 @@ public class UrlReader {
     }
 
 }
-
-/*
-create table area(
-    id int,
-    name varchar(20),
-    code varchar(30)
-)
-
-create table street(
-    id int,
-    name varchar(20),
-    code varchar(30),
-    aid fk  区id
-)
-
-create table house(
-    id int,
-    title varchar(20), 房源标题
-    link varchar(50), 房源链接
-    sid fk 街道id,
-)
-
-create table house_base_detail(
-    id int,
-
-    房屋户型
-    建筑面积
-    套内面积
-    房屋朝向
-    装修情况
-
-    供暖方式
-    产权年限
-    用电类型
-    所在楼层
-    户型结构
-    建筑类型
-
-    建筑结构
-    梯户比例
-    配备电梯
-    用水类型
-    燃气价格
-
-    # 交易属性
-    挂牌时间
-    上次交易
-    房屋年限
-    抵押信息
-    交易权属
-
-    房屋用途
-    产权所有
-    房本备件
-
-    hid fk 房源id
-)
-*/

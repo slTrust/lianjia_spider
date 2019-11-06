@@ -18,8 +18,8 @@
         </environment>
     </environments>
     <mappers>
-        <!-- 先注释掉这句 因为你还没配置 -->
-        <!-- <mapper resource="org/mybatis/example/BlogMapper.xml"/> -->
-        <mapper class="dao.AreaMapper"/>
+        <mapper class="mapper.AreaMapper"/>
+        <!-- 动态sql 配置 -->
+        <mapper resource="db/mybatis/MyMapper.xml"/>
     </mappers>
 </configuration>

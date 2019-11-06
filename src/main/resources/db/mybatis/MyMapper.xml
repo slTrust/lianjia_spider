@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MyMapper">
+
+    <insert id="batchInsertAreas" parameterType="map">
+        insert into area (id,name,code)
+        values
+        <foreach item="area" collection="areas"  separator=",">
+            (null,#{area.name}, #{area.code})
+        </foreach>
+    </insert>
+
+    <update id="clearAreas">
+        truncate table area
+    </update>
+
+
+</mapper>
