@@ -8,7 +8,7 @@
         insert into area (id,name,code)
         values
         <foreach item="area" collection="areas"  separator=",">
-            (null,#{area.name}, #{area.code})
+            (null,#{area.area_name}, #{area.area_code})
         </foreach>
     </insert>
 

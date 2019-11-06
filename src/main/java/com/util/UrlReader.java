@@ -106,9 +106,9 @@ public class UrlReader {
             Map<String,String> info = new HashMap<>();
             String hrefPath = nodeLists.get(0).item(i).getAttributes().getNamedItem("href").getNodeValue();
             String name = nodeLists.get(0).item(i).getTextContent();
-            info.put("href", baseUrl + hrefPath);
-            info.put("name",name);
-            info.put("code",hrefPath.replace("/ershoufang/","").replace("/","").toString());
+            info.put("area_href", baseUrl + hrefPath);
+            info.put("area_name",name);
+            info.put("area_code",hrefPath.replace("/ershoufang/","").replace("/","").toString());
             result.add(info);
         }
         return result;
@@ -356,7 +356,7 @@ public class UrlReader {
 
 
     public static void main(String[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        getAreaInfos();
+//        getAreaInfos();
 //        List<String> areaUrls = getAreaUrls(); // https://tj.lianjia.com/ershoufang/heping/
 //        System.out.println(areaUrls);
         // 获取某个区的所有街道url

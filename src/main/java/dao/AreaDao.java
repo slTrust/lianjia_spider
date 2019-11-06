@@ -4,11 +4,9 @@ import com.util.UrlReader;
 import mapper.AreaMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class AreaDao {
 
