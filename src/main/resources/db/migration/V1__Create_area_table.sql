@@ -46,7 +46,7 @@ create table house_detail(
 --     建筑面积
     build_area decimal(6,2),
 --     套内面积
-    inner_area decimal(6,2),
+    inner_area varchar (30),
 --     房屋朝向
     aspect varchar(30),
 --     装修情况
@@ -72,7 +72,7 @@ create table house_detail(
 --     用水类型
     water_type varchar(30),
 --     燃气价格
-    gas_price decimal(4,2),
+    gas_price varchar (30),
 
 --     # 交易属性
 --     挂牌时间
