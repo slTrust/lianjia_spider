@@ -49,6 +49,56 @@
     </resultMap>
 
 
+    <select id="selectStreetIdByCode" parameterType="string" resultType="int">
+        select id from street where code = #{street_code}
+    </select>
+
+    <insert id="insertHouse" parameterType="map">
+        insert into house(id,title,link,total_price,square_metre_price,street_id)
+        values(null,#{title},#{link},#{total_price},#{square_metre_price},#{street_id})
+    </insert>
+
+
+
+    <select id="selectHouseByLink" parameterType="string" resultType="int">
+        select id from house where link = #{link}
+    </select>
+
+    <insert id="insertHouseDetail" parameterType="map">
+        insert into house_detail
+        values(null,
+        #{house_type},
+        #{build_area},
+        #{inner_area},
+        #{aspect},
+        #{decorated},
+
+        #{heating_mode},
+        #{property},
+        #{electricity_type},
+        #{floot},
+        #{house_struct},
+
+        #{build_type},
+        #{build_struct},
+        #{ladder_house_ratio},
+        #{elevator},
+        #{water_type},
+
+        #{gas_price},
+        #{listing_data},
+        #{last_trade},
+        #{house_years},
+        #{mortgage},
+
+        #{trade_right},
+        #{house_use},
+        #{property_owner},
+        #{spare_pats},
+        #{house_id}
+        );
+    </insert>
+
 
     <update id="clearAreas">
         truncate table area;

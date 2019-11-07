@@ -2,7 +2,6 @@ package dao;
 
 import com.util.UrlReader;
 import entity.Area;
-import entity.House;
 import entity.Street;
 import mapper.AreaMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -98,16 +97,47 @@ public class AreaStreetDao {
         }
     }
 
-    public void insertHouse(Map<String,Object> param){
-//        private int id;
-//        private String title;
-//        private String link;
-//        private Double total_price;
-//        private Double square_metre_price;
-//        private HouseDetail houseDetail;
-        House h = new House();
+    public void insertHouse(Map param){
 
-//        spliceInsertBatch("MyMapper.insertHouse",);
+        try (SqlSession session = sqlSessionFactory.openSession(true)) {
+            // 根据 street_code 拿到街道id
+            String code = (String) param.get("street_code");
+            int id = session.selectOne("MyMapper.selectStreetIdByCode", code);
+
+            param.put("street_id",id);
+            // 录入 house数据
+            System.out.println(param);
+            session.insert("MyMapper.insertHouse", param);
+            session.commit();
+            // 查询当前录入数据的 house id
+            String link = (String) param.get("link");
+            int house_id = session.selectOne("MyMapper.selectHouseByLink",link);
+            // 录入 房屋详情
+            param.put("house_id",house_id);
+            System.out.println("insert insert");
+            System.out.println(xxx(param));
+            System.out.println("insert insert");
+            session.insert("MyMapper.insertHouseDetail", xxx(param));
+        }
+    }
+
+    public Map<String, Object> xxx(Map<String,Object> map){
+        Map<String,Object> tmp = new HashMap<>();
+        Map<String,String> baseInfo = (Map<String, String>) map.get("baseInfo");
+        Map<String,String> tradeInfo = (Map<String, String>) map.get("tradeInfo");
+
+        for (String key:map.keySet() ) {
+            tmp.put(key,map.get(key));
+        }
+        for (String key:baseInfo.keySet() ) {
+            tmp.put(key,baseInfo.get(key));
+        }
+        for (String key:tradeInfo.keySet() ) {
+            tmp.put(key,tradeInfo.get(key));
+        }
+        tmp.remove("baseInfo");
+        tmp.remove("tradeInfo");
+        return tmp;
     }
 
     public void clearStreets(){

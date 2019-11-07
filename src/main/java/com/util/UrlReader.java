@@ -1,5 +1,6 @@
 package com.util;
 
+import dao.AreaStreetDao;
 import entity.Area;
 import entity.Street;
 import org.json.JSONObject;
@@ -19,6 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class UrlReader {
+    public static final AreaStreetDao areaDao = new AreaStreetDao(SqlSessionUtil.getSessionFactory());
     public static int count = 0;
     public static final int delayTime = 300;
     public static final Map<String,String> xpathExpMap = new HashMap<>();
@@ -234,7 +236,7 @@ public class UrlReader {
             // 存入数据库
             System.out.println(infos);
 
-
+            areaDao.insertHouse(infos);
         }
     }
 
@@ -245,7 +247,7 @@ public class UrlReader {
         baseKeyMap.put("套内面积","inner_area");
         baseKeyMap.put("房屋朝向","aspect");
         baseKeyMap.put("装修情况","decorated");
-        baseKeyMap.put("供暖方式","heatingMode");
+        baseKeyMap.put("供暖方式","heating_mode");
         baseKeyMap.put("产权年限","property");
         baseKeyMap.put("用电类型","electricity_type");
         baseKeyMap.put("所在楼层","floor");
@@ -265,7 +267,7 @@ public class UrlReader {
         tradeKeyMap.put("交易权属","trade_right");
 
         tradeKeyMap.put("房屋用途","house_use");
-        tradeKeyMap.put("产权所属","propertyOwner");
+        tradeKeyMap.put("产权所属","property_owner");
         tradeKeyMap.put("房本备件","spare_parts");
 
         Map<String,String> baseInfo = (Map<String, String>) infos.get("baseInfo");
@@ -309,7 +311,6 @@ public class UrlReader {
 
     public static Map<String,Object> getHouseDetailByUrl(String url) {
         try {
-
             Map<String,Object> result = new HashMap<>();
             String html = null;
             html = UrlUtils.read(url).body().html();
@@ -380,11 +381,11 @@ public class UrlReader {
 
     public static void task(List<String> list,String type) {
         try {
-            if(type.equals("house")){
-                list = list.subList(0,3);
-            }else{
-                list = list.subList(0,1);
-            }
+//            if(type.equals("house")){
+//                list = list.subList(0,3);
+//            }else{
+//                list = list.subList(0,1);
+//            }
             CountDownLatch countDownLatch = new CountDownLatch(list.size());
             for (int i = 0; i < list.size() ; i++) {
                 Thread.sleep(new Random().nextInt(3) * delayTime);

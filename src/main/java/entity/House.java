@@ -7,6 +7,9 @@ public class House {
     private Double total_price;
     private Double square_metre_price;
     private HouseDetail houseDetail;
+    private Street street;
+
+
 
     public House() {
     }
@@ -59,6 +62,14 @@ public class House {
         this.houseDetail = houseDetail;
     }
 
+    public Street getStreet() {
+        return street;
+    }
+
+    public void setStreet(Street street) {
+        this.street = street;
+    }
+
     @Override
     public String toString() {
         return "House{" +
@@ -68,6 +79,7 @@ public class House {
                 ", total_price=" + total_price +
                 ", square_metre_price=" + square_metre_price +
                 ", houseDetail=" + houseDetail +
+                ", street=" + street +
                 '}';
     }
 }

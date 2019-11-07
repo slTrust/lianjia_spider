@@ -15,7 +15,7 @@ public class HouseDetail {
 //--     装修情况
     private String decorated;
 // --     供暖方式
-    private String heatingMode;
+    private String heating_mode;
 // --     产权年限
     private String property;
 // --     用电类型
@@ -51,7 +51,7 @@ public class HouseDetail {
 // --     房屋用途
     private String house_use;
 // --     产权所属
-    private String propertyOwner;
+    private String property_owner;
 // --     房本备件
     private String spare_parts;
 
@@ -106,12 +106,12 @@ public class HouseDetail {
         this.decorated = decorated;
     }
 
-    public String getHeatingMode() {
-        return heatingMode;
+    public String getHeating_mode() {
+        return heating_mode;
     }
 
-    public void setHeatingMode(String heatingMode) {
-        this.heatingMode = heatingMode;
+    public void setHeating_mode(String heating_mode) {
+        this.heating_mode = heating_mode;
     }
 
     public String getProperty() {
@@ -242,12 +242,12 @@ public class HouseDetail {
         this.house_use = house_use;
     }
 
-    public String getPropertyOwner() {
-        return propertyOwner;
+    public String getProperty_owner() {
+        return property_owner;
     }
 
-    public void setPropertyOwner(String propertyOwner) {
-        this.propertyOwner = propertyOwner;
+    public void setProperty_owner(String property_owner) {
+        this.property_owner = property_owner;
     }
 
     public String getSpare_parts() {
@@ -267,7 +267,7 @@ public class HouseDetail {
                 ", inner_area=" + inner_area +
                 ", aspect='" + aspect + '\'' +
                 ", decorated='" + decorated + '\'' +
-                ", heatingMode='" + heatingMode + '\'' +
+                ", heating_mode='" + heating_mode + '\'' +
                 ", property='" + property + '\'' +
                 ", electricity_type='" + electricity_type + '\'' +
                 ", floor='" + floor + '\'' +
@@ -284,7 +284,7 @@ public class HouseDetail {
                 ", mortgage='" + mortgage + '\'' +
                 ", trade_right='" + trade_right + '\'' +
                 ", house_use='" + house_use + '\'' +
-                ", propertyOwner='" + propertyOwner + '\'' +
+                ", property_owner='" + property_owner + '\'' +
                 ", spare_parts='" + spare_parts + '\'' +
                 '}';
     }
