@@ -1,23 +1,27 @@
 package entity;
 
-public class Area {
+public class Street {
     private int id;
     private String code;
     private String name;
     private String link;
+    private Area area;
 
-    public Area() {
+    public Street(){
+
     }
 
-    public Area(String code, String name) {
-        this.code = code;
-        this.name = name;
-    }
-
-    public Area(String code, String name, String link) {
+    public Street(String code, String name, String link) {
         this.code = code;
         this.name = name;
         this.link = link;
+    }
+
+    public Street(String code, String name, String link, Area area) {
+        this.code = code;
+        this.name = name;
+        this.link = link;
+        this.area = area;
     }
 
     public int getId() {
@@ -52,13 +56,22 @@ public class Area {
         this.link = link;
     }
 
+    public Area getArea() {
+        return area;
+    }
+
+    public void setArea(Area area) {
+        this.area = area;
+    }
+
     @Override
     public String toString() {
-        return "Area{" +
+        return "Street{" +
                 "id=" + id +
                 ", code='" + code + '\'' +
                 ", name='" + name + '\'' +
                 ", link='" + link + '\'' +
+                ", area=" + area +
                 '}';
     }
 }

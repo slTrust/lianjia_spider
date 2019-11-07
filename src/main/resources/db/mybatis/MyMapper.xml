@@ -4,17 +4,80 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="MyMapper">
 
+    <!-- arae -->
     <insert id="batchInsertAreas" parameterType="map">
         insert into area (id,name,code)
         values
         <foreach item="area" collection="areas"  separator=",">
-            (null,#{area.area_name}, #{area.area_code})
+            (null,#{area.name}, #{area.code})
+        </foreach>
+    </insert>
+    <!-- street -->
+    <select id="selectStreets" resultMap="detailStreetMap">
+        select
+          s.id as street_id,
+          s.name as street_name ,
+          s.code as street_code,
+          a.id as area_id,
+          a.name as area_name,
+          a.code as area_code
+        from street s
+          left join area as a
+          on a.id=s.area_id
+        ;
+    </select>
+
+    <insert id="batchInsertStreets" parameterType="map">
+        insert into street(id,name,code,area_id)
+        values
+        <foreach item="street" collection="streets"  separator=",">
+            (null,#{street.name},#{street.code},#{street.area.id})
         </foreach>
     </insert>
 
+
+
+    <resultMap id="detailStreetMap" type="entity.Street">
+        <id property="id" column="street_id"/>
+        <result property="name" column="street_name"/>
+        <result property="code" column="street_code"/>
+        <association property="area" javaType="entity.Area">
+            <id property="id" column="area_id"/>
+            <result property="name" column="area_name"/>
+            <result property="code" column="area_code"/>
+        </association>
+    </resultMap>
+
+
+
     <update id="clearAreas">
-        truncate table area
+        truncate table area;
     </update>
+
+    <update id="clearTablehouse_images">
+        truncate table house_images;
+    </update>
+    <update id="clearTablehouse_base_detail">
+        truncate table house_base_detail;
+    </update>
+    <update id="clearTablehouse">
+        truncate table house;
+    </update>
+    <update id="clearTablestreet">
+        truncate table street;
+    </update>
+    <update id="clearTablearea">
+        truncate table area;
+    </update>
+
+    <update id="dropAllTable">
+        drop table if exists house_images,
+        house_base_detail,
+        house,
+        street,
+        area;
+    </update>
+
 
 
 </mapper>
