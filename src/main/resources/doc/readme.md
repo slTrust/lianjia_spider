@@ -52,3 +52,8 @@ cd docker_mysql
 ```
 http://note.youdao.com/noteshare?id=9c912476ba523db7a32358203c46a72b
 ``` 
+
+#### 引入commons.io
+
+- 使用文件代替内存存储 url 信息
+- https://www.jianshu.com/p/7a81f603fe1d

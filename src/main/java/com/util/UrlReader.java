@@ -11,6 +11,7 @@ import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,9 +40,6 @@ public class UrlReader {
 
     public static final List<Area> cacheAreaInfos = new ArrayList<>();
     public static final List<Street> cacheStreetInfos = new ArrayList<>();
-    public static final List<String> streetPageNoUrls = new ArrayList<>();
-
-    public static final List<String> houseUrls = new ArrayList<>();
 
     public static String baseUrl = "https://tj.lianjia.com";
 
@@ -208,9 +206,10 @@ public class UrlReader {
             cacheStreetInfos.addAll(streetLinks);
 //            System.out.println(areaLink.getName() +" 区的街道信息读取完毕" + count);
         }else if(type.equals("street")){
-            String pageInfoStr = getStreetPageInfoUrl(url);
+            String pageInfoStr =
+                    (url);
             List<String> urls = convertPageToUrls(url,pageInfoStr);
-            streetPageNoUrls.addAll(urls);
+            MyFileUtils.writeLinesToFile(urls,"test.txt",true);
 //            System.out.println("街道所有页码链接转换完毕");
         }else if(type.equals("street_page")){
             // 读取某个街道 某页 的所有house
@@ -222,7 +221,7 @@ public class UrlReader {
                                     .map(item->item + "__" + street_code)
                                     .collect(Collectors.toList());
             // 拼接街道 code 方便后续处理
-            houseUrls.addAll(urls);
+            MyFileUtils.writeLinesToFile(urls,"house_url.txt",true);
         }else if(type.equals("house")){
             // 获取房屋详情 map
             String[] s = url.split("__");
@@ -235,8 +234,11 @@ public class UrlReader {
             mapFieldContent(infos);
             // 存入数据库
             System.out.println(infos);
-
-            areaDao.insertHouse(infos);
+            String json = MyFileUtils.mapToJsonString(infos);
+            List<String> a = new ArrayList<>();
+            a.add(json);
+            MyFileUtils.writeLinesToFile(a,"house_detail.txt",true);
+//            areaDao.insertHouse(infos);
         }
     }
 
@@ -413,6 +415,9 @@ public class UrlReader {
 
 
     public static List<String> getStreetUrlByThread() {
+        MyFileUtils.removeFile("test.txt");
+        MyFileUtils.removeFile("house_url.txt");
+
         List<Area> areas = getAreaInfos();
         if(areas.size() > 0){
             //区——任务 找到每个区的街道 并缓存
@@ -423,8 +428,11 @@ public class UrlReader {
             task(cacheStreetInfos.stream()
                     .map(Street::getLink)
                     .collect(Collectors.toList()), "street");
-            task(streetPageNoUrls,"street_page");
-            task(houseUrls,"house");
+            // 读取文件
+            List<String> streetPageUrls2 = MyFileUtils.readFile("test.txt");
+            task(streetPageUrls2,"street_page");
+            List<String> houseUrls2 = MyFileUtils.readFile("house_url.txt");
+            task(houseUrls2,"house");
         }
         return null;
     }
@@ -436,7 +444,9 @@ public class UrlReader {
         return matcher.group();
     }
 
-    public static void main(String[] args){
-        getStreetUrlByThread();
+    public static void main(String[] args) {
+//        getStreetUrlByThread();
+        List<String> houseUrls2 = MyFileUtils.readFile("house_url.txt");
+        task(houseUrls2,"house");
     }
 }
