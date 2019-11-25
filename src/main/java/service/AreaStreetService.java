@@ -39,4 +39,8 @@ public class AreaStreetService {
             areaStreetDao.batchInsertStreet();
         }
     }
+
+    public void insertBatchHouse(){
+        areaStreetDao.readBigFileInsertBatch("house_detail.txt");
+    }
 }

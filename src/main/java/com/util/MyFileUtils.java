@@ -1,6 +1,8 @@
 package com.util;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
@@ -22,23 +24,29 @@ public class MyFileUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
+
+    public static Map<String,Object> mergeMap(Map<String,Object> m1, Map<String,Object> m2){
+        Map result = new HashMap();
+        for (String key: m1.keySet()) {
+            System.out.println(key+"-"+m1.get(key));
+            result.put(key,m1.get(key));
+        }
+        for (String key: m2.keySet()) {
+            result.put(key,m2.get(key));
+            System.out.println(key+"-"+m2.get(key));
+        }
+        return result;
     }
 
     public static String mapToJsonString(Map map) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("{");
-        Iterator<String> iter = map.keySet().iterator();
-        while(iter.hasNext()) {
-            String key = iter.next();
-            String value = map.get(key).toString();
-            stringBuilder.append("\""+key+"\""+":"+"\""+value+"\"");
-            if (iter.hasNext()){
-                stringBuilder.append(",");
-            }
-        }
-        stringBuilder.append("}");
-        return stringBuilder.toString();
+       return JSON.toJSONString(map);
+    }
+
+    public static Map<String,Object> JsonToMap(String  string) {
+        Map a = JSONObject.parseObject(string);
+        return a;
     }
 
     public static void writeLinesToFile(List<String> lines, String file_name,Boolean append) {
@@ -61,7 +69,5 @@ public class MyFileUtils {
         writeLinesToFile(lines,"test.txt",true);
         writeLinesToFile(lines,"test.txt",true);
         writeLinesToFile(lines,"test.txt",true);
-
-
     }
 }

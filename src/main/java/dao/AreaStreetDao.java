@@ -1,16 +1,24 @@
 package dao;
 
+import com.util.MyFileUtils;
 import com.util.UrlReader;
 import entity.Area;
+import entity.House;
+import entity.HouseDetail;
 import entity.Street;
 import mapper.AreaMapper;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AreaStreetDao {
@@ -145,4 +153,103 @@ public class AreaStreetDao {
             session.update("MyMapper.clearStreets");
         }
     }
+
+    public void readBigFileInsertBatch(String fileName) {
+        try {
+            File file = new File(MyFileUtils.projectDir,"target/"+fileName);
+            long count = 0;
+            List<String> result = new ArrayList<>();
+            LineIterator lineIterator = FileUtils.lineIterator(file);
+            while (lineIterator.hasNext()) {
+                result.add(lineIterator.next());
+                if(count %100 == 0 && count != 0){
+                    xxx(result);
+                    result = new ArrayList<>();
+                }
+                count ++;
+            }
+            xxx(result);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void xxx(List<String> list){
+        list.stream().forEach(item->{
+            Map<String,Object> map = MyFileUtils.JsonToMap(item);
+            // previewImages
+            System.out.println(map.get("title"));
+            System.out.println(map.get("link"));
+            System.out.println(map.get("street_code"));
+            System.out.println(map.get("previewImages"));
+
+            House house = new House();
+            house.setTitle((String) map.get("title"));
+            house.setLink((String) map.get("link"));
+            house.setTotal_price(FormatStringToDouble(map,"total_price"));
+            house.setSquare_metre_price(FormatStringToDouble(map,"square_metre_price"));
+
+            System.out.println(map.get("tradeInfo"));
+            Map<String,Object> mapHouseDetail = MyFileUtils.mergeMap((Map<String,Object>)map.get("baseInfo"),(Map<String,Object>)map.get("tradeInfo"));
+            System.out.println(mapHouseDetail);
+            mapHouseDetail.put("build_area",FormatStringToDouble(mapHouseDetail,"build_area"));
+            mapHouseDetail.put("inner_area",FormatStringToDouble(mapHouseDetail,"inner_area"));
+            mapHouseDetail.put("gas_price",FormatStringToDouble(mapHouseDetail,"gas_price"));
+            mapHouseDetail.put("last_trade",formatDate((String) mapHouseDetail.get("last_trade")));
+            mapHouseDetail.put("listing_date",formatDate((String) mapHouseDetail.get("listing_date")));
+            HouseDetail houseDetail = getHouseDetailInstanceByMapData(mapHouseDetail);
+
+            System.out.println(houseDetail);
+
+            house.setHouseDetail(houseDetail);
+
+            Street street = new Street();
+            street.setCode((String) map.get("street_code"));
+            street.setId(getStreet()
+                            .stream()
+                            .filter(item2->item2.getCode().equals((String) map.get("street_code")))
+                            .collect(Collectors.toList()).get(0).getId());
+            house.setStreet(street);
+
+        });
+    }
+
+    private  static Double  FormatStringToDouble(Map map,String key){
+        String value = (String) map.get(key);
+        if((value == null) ||"-".equals(value) || "暂无数据".equals(value)){
+            value = "-1";
+        }else if(value.contains("㎡")){
+            int index = value.indexOf("㎡");
+            value = value.substring(0,index);
+        }else if(value.contains("元/m")){
+            int index = value.indexOf("元/m");
+            value = value.substring(0,index);
+        }
+        return Double.parseDouble(value);
+    }
+
+    private static HouseDetail getHouseDetailInstanceByMapData(Map<String, Object> mapHouseDetail) {
+        HouseDetail houseDetail = new HouseDetail();
+        try {
+            BeanUtils.populate(houseDetail,mapHouseDetail);
+            return houseDetail;
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Date formatDate(String strDate){
+        if((strDate == null) ||"-".equals(strDate) || "暂无数据".equals(strDate)){
+            return null;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = format.parse(strDate);
+            return date;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
