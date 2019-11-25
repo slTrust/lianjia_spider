@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class UrlReader {
     public static final AreaStreetDao areaDao = new AreaStreetDao(SqlSessionUtil.getSessionFactory());
     public static int count = 0;
-    public static final int delayTime = 300;
+    public static final int delayTime = 100;
     public static final Map<String,String> xpathExpMap = new HashMap<>();
     public static final String NODE_AREA_A = "NODE_AREA_A";
     public static final String NODE_STREET_A = "NODE_STREET_A";
@@ -35,7 +35,8 @@ public class UrlReader {
         xpathExpMap.put(NODE_STREET_A,"//div[@data-role=\"ershoufang\"]/div[2]/a");
         xpathExpMap.put(PAGE_INFO_ATTR,"//*[@class=\"contentBottom clear\"]/div[2]/div[1]/@page-data");
         xpathExpMap.put(NODE_HOUSE_TITLE,"//div[@class=\"sellDetailHeader\"]//div[@class=\"title\"]/h1");
-        xpathExpMap.put(NODE_HOUSE_TOTAL_PRICE,"/html/body/div[5]/div[2]/div[2]/span[1]");
+//        xpathExpMap.put(NODE_HOUSE_TOTAL_PRICE,"/html/body/div[5]/div[2]/div[2]/span[1]");
+        xpathExpMap.put(NODE_HOUSE_TOTAL_PRICE,"/html/body//div[@class=\"content\"]/div[@class=\"price\"]/span[@class=\"total\"]");
     }
 
     public static final List<Area> cacheAreaInfos = new ArrayList<>();
@@ -180,8 +181,6 @@ public class UrlReader {
     }
 
     private static void  workAction(String url, String type) {
-        System.out.println("workAction--->" + type);
-        System.out.println(url);
         if(type.equals("area")){
             // url是 区链接 找到它下面的所有街道
             Area areaLink = cacheAreaInfos.stream()
@@ -206,8 +205,7 @@ public class UrlReader {
             cacheStreetInfos.addAll(streetLinks);
 //            System.out.println(areaLink.getName() +" 区的街道信息读取完毕" + count);
         }else if(type.equals("street")){
-            String pageInfoStr =
-                    (url);
+            String pageInfoStr = getStreetPageInfoUrl(url);
             List<String> urls = convertPageToUrls(url,pageInfoStr);
             MyFileUtils.writeLinesToFile(urls,"test.txt",true);
 //            System.out.println("街道所有页码链接转换完毕");
@@ -227,25 +225,32 @@ public class UrlReader {
             String[] s = url.split("__");
             String link_url = s[0];
             String street_code = s[1];
+
+            System.out.println(link_url);
             Map<String,Object> infos = getHouseDetailByUrl(link_url);
+            System.out.println("----------1");
+            System.out.println("----------2");
+            System.out.println("----------3");
+            System.out.println(infos);
             infos.put("street_code",street_code);
             infos.put("link",link_url);
             // 把房屋信息做映射  由中文--》 英文字段
             mapFieldContent(infos);
             // 存入数据库
-            System.out.println(infos);
             String json = MyFileUtils.mapToJsonString(infos);
             List<String> a = new ArrayList<>();
             a.add(json);
             MyFileUtils.writeLinesToFile(a,"house_detail.txt",true);
-//            areaDao.insertHouse(infos);
         }
     }
 
     public static Map<String,Object> mapFieldContent(Map<String,Object> infos){
         Map<String,String> baseKeyMap = new HashMap<>();
         baseKeyMap.put("房屋户型","house_type");
-        baseKeyMap.put("建筑面积","build_area");
+        baseKeyMap.put("建筑面积","build_area"); // 非公寓为此
+        baseKeyMap.put("计租面积","rental_area"); // 公寓为此
+
+
         baseKeyMap.put("套内面积","inner_area");
         baseKeyMap.put("房屋朝向","aspect");
         baseKeyMap.put("装修情况","decorated");
@@ -277,15 +282,18 @@ public class UrlReader {
         transCNtoColumnName(baseKeyMap,baseInfo);
         transCNtoColumnName(tradeKeyMap,tradeInfo);
 
-        // 把 build_area  转换为数字
-        if(baseInfo.get("build_area")!=null){
-            System.out.println(baseInfo.get("build_area"));
+        if(baseInfo.get("build_area")!=null && !baseInfo.get("build_area").equals("-")){
             baseInfo.put("build_area",filterNum(baseInfo.get("build_area")));
+        }
+
+        if(baseInfo.get("rental_area")!=null && !baseInfo.get("rental_area").equals("-")){
+            baseInfo.put("rental_area",filterNum(baseInfo.get("rental_area")));
         }
         return infos;
     }
 
     public static void transCNtoColumnName(Map<String,String> transMap,Map<String,String> resMap){
+
         for (String key:transMap.keySet()) {
             String column_name = transMap.get(key);
             String value = "-";
@@ -318,9 +326,11 @@ public class UrlReader {
             html = UrlUtils.read(url).body().html();
 
             String title = (String) getNodeOrValue(html,xpathExpMap.get(NODE_HOUSE_TITLE),"node");
-            String total_price = (String) getNodeOrValue(html,xpathExpMap.get(NODE_HOUSE_TOTAL_PRICE),"node");
-            String square_metre_price = (String) getNodeOrValue(html,"/html/body/div[5]/div[2]/div[2]/div[1]/div[1]/span","node");
 
+            String total_price = (String) getNodeOrValue(html,xpathExpMap.get(NODE_HOUSE_TOTAL_PRICE),"node");
+            System.out.println(total_price);
+
+            String square_metre_price = (String) getNodeOrValue(html,"/html/body//div[@class=\"content\"]/div[@class=\"price\"]//div[@class=\"unitPrice\"]/span","node");
             // 房屋图片
             NodeList nodeList = (NodeList) getNodeOrValue(html,"//div[@id=\"thumbnail2\"]/ul/li/img/@src","nodelist");
             List<String> previewImages = new ArrayList<>();
@@ -332,6 +342,7 @@ public class UrlReader {
 
             Map<String,String> baseInfos = new HashMap<>();
 
+            //*[@id="introduction"]/div/div/div[1]/div[2]/ul/li[1]/span
             String baseInfoExp = "//*[@id=\"introduction\"]/div/div/div[1]/div[2]/ul/li/span";
             String baseInfoExp2 = "//*[@id=\"introduction\"]/div/div/div[1]/div[2]/ul/li";
             NodeList infoLabels= (NodeList) getNodeOrValue(html,baseInfoExp,"nodelist");
@@ -346,6 +357,7 @@ public class UrlReader {
                 String value = cacheValue.substring(cacheValue.lastIndexOf(key) + key.length() );
                 baseInfos.put(key,value);
             }
+
 
             Map<String,String> tradeInfos = new HashMap<>();
             String tradeInfoExp = "//*[@id=\"introduction\"]/div/div/div[2]/div[2]/ul/li/span[1]";
@@ -368,10 +380,10 @@ public class UrlReader {
             result.put("previewImages",previewImages);
             result.put("baseInfo",baseInfos);
             result.put("tradeInfo",tradeInfos);
-
             return result;
 
         } catch (XPathExpressionException e) {
+            // 把解析错误的url存入 根据差异格式化 信息
             throw new RuntimeException(e);
         }
     }
@@ -424,6 +436,7 @@ public class UrlReader {
             task(areas.stream()
                     .map(Area::getLink)
                     .collect(Collectors.toList()), "area");
+
             // 街道--任务 找到每个街道有多少页码
             task(cacheStreetInfos.stream()
                     .map(Street::getLink)
@@ -445,8 +458,44 @@ public class UrlReader {
     }
 
     public static void main(String[] args) {
-//        getStreetUrlByThread();
+
+//        step01_writeStreetUrlToFile();
+        step02_WriteHouseDetailToFile();
+//        test_step02_WriteHouseDetailToFile();
+    }
+
+    public static void step01_writeStreetUrlToFile(){
+        getStreetUrlByThread();
+    }
+
+    public static void step02_WriteHouseDetailToFile(){
+        MyFileUtils.removeFile("house_detail.txt");
         List<String> houseUrls2 = MyFileUtils.readFile("house_url.txt");
         task(houseUrls2,"house");
     }
+
+    public static void step03_insesrtHouseDetailToDB(){
+        List<String> houseUrls2 = MyFileUtils.readFile("house_detail.txt");
+        // 批量插入 以及问题 https://blog.csdn.net/sunyanchun/article/details/89187552
+
+        /*
+        1 数据分析 图表 echart /  highcharts
+        https://cloud.tencent.com/developer/article/1477265
+
+        位置信息根据街道小区 可视化
+
+        */
+    }
+
+    public static void test_step02_WriteHouseDetailToFile(){
+        MyFileUtils.removeFile("house_detail.txt");
+        List<String> aa = new ArrayList<>();
+        aa.add("https://tj.lianjia.com/ershoufang/101106268680.html__quanyechang");
+        task(aa,"house");
+        // 一些报错 node不存在有情况是 一种房源下架了
+    }
+
+
+
+
 }

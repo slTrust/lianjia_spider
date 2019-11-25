@@ -43,8 +43,10 @@ create table house_detail(
     id bigint primary key auto_increment,
 --  房屋户型
     house_type varchar(20),
---     建筑面积
+--     建筑面积(非公寓)
     build_area decimal(6,2),
+--   计租面积(公寓)
+    rental_area decimal(6,2),
 --     套内面积
     inner_area varchar (30),
 --     房屋朝向
