@@ -41,6 +41,7 @@ public class AreaStreetService {
     }
 
     public void insertBatchHouse(){
-        areaStreetDao.readBigFileInsertBatch("house_detail.txt");
+        List<Street> streets = getStreetList();
+        areaStreetDao.readBigFileInsertBatch("house_detail.txt",streets);
     }
 }

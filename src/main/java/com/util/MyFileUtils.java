@@ -30,12 +30,10 @@ public class MyFileUtils {
     public static Map<String,Object> mergeMap(Map<String,Object> m1, Map<String,Object> m2){
         Map result = new HashMap();
         for (String key: m1.keySet()) {
-            System.out.println(key+"-"+m1.get(key));
             result.put(key,m1.get(key));
         }
         for (String key: m2.keySet()) {
             result.put(key,m2.get(key));
-            System.out.println(key+"-"+m2.get(key));
         }
         return result;
     }

@@ -58,8 +58,6 @@
         values(null,#{title},#{link},#{total_price},#{square_metre_price},#{street_id})
     </insert>
 
-
-
     <select id="selectHouseByLink" parameterType="string" resultType="int">
         select id from house where link = #{link}
     </select>
@@ -69,6 +67,7 @@
         values(null,
         #{house_type},
         #{build_area},
+        #{rental_area},
         #{inner_area},
         #{aspect},
         #{decorated},
@@ -98,6 +97,15 @@
         #{house_id}
         );
     </insert>
+
+    <insert id="batchInsertHouseImages" parameterType="map">
+        insert into house_images (id,link,house_id)
+        values
+        <foreach item="img" collection="images"  separator=",">
+            (null,#{img.link}, #{img.house_id})
+        </foreach>
+    </insert>
+
 
 
     <update id="clearAreas">

@@ -1,6 +1,6 @@
 SET FOREIGN_KEY_CHECKS=0;
 drop table if exists house_images;
-drop table if exists house_base_detail;
+drop table if exists house_detail;
 drop table if exists house;
 drop table if exists street;
 drop table if exists area;
@@ -78,9 +78,9 @@ create table house_detail(
 
 --     # 交易属性
 --     挂牌时间
-    listing_date date,
+    listing_date bigint,
 --     上次交易
-    last_trade date,
+    last_trade bigint,
 --     房屋年限
     house_years varchar (10),
 --     抵押信息

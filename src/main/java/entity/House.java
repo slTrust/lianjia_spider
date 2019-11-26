@@ -1,5 +1,7 @@
 package entity;
 
+import java.util.List;
+
 public class House {
     private int id;
     private String title;
@@ -7,9 +9,8 @@ public class House {
     private Double total_price;
     private Double square_metre_price;
     private HouseDetail houseDetail;
+    private List<HouseImage> houseImages;
     private Street street;
-
-
 
     public House() {
     }
@@ -70,6 +71,14 @@ public class House {
         this.street = street;
     }
 
+    public List<HouseImage> getHouseImages() {
+        return houseImages;
+    }
+
+    public void setHouseImages(List<HouseImage> houseImages) {
+        this.houseImages = houseImages;
+    }
+
     @Override
     public String toString() {
         return "House{" +
@@ -79,6 +88,7 @@ public class House {
                 ", total_price=" + total_price +
                 ", square_metre_price=" + square_metre_price +
                 ", houseDetail=" + houseDetail +
+                ", houseImages=" + houseImages +
                 ", street=" + street +
                 '}';
     }

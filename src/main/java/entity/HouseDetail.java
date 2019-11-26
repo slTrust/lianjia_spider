@@ -8,6 +8,8 @@ public class HouseDetail {
     private String house_type;
 //--     建筑面积
     private double build_area;
+//--     计租面积
+    private double rental_area;
 //--     套内面积
     private double inner_area;
 //--     房屋朝向
@@ -39,9 +41,9 @@ public class HouseDetail {
 
 // --     # 交易属性
 // --     挂牌时间
-    private Date listing_date;
+    private long listing_date;
 // --     上次交易
-    private Date last_trade;
+    private long last_trade;
 // --     房屋年限
     private String house_years;
 // --     抵押信息
@@ -80,6 +82,14 @@ public class HouseDetail {
 
     public void setBuild_area(double build_area) {
         this.build_area = build_area;
+    }
+
+    public double getRental_area() {
+        return rental_area;
+    }
+
+    public void setRental_area(double rental_area) {
+        this.rental_area = rental_area;
     }
 
     public double getInner_area() {
@@ -194,19 +204,19 @@ public class HouseDetail {
         this.gas_price = gas_price;
     }
 
-    public Date getListing_date() {
+    public long getListing_date() {
         return listing_date;
     }
 
-    public void setListing_date(Date listing_date) {
+    public void setListing_date(long listing_date) {
         this.listing_date = listing_date;
     }
 
-    public Date getLast_trade() {
+    public long getLast_trade() {
         return last_trade;
     }
 
-    public void setLast_trade(Date last_trade) {
+    public void setLast_trade(long last_trade) {
         this.last_trade = last_trade;
     }
 
@@ -264,6 +274,7 @@ public class HouseDetail {
                 "id=" + id +
                 ", house_type='" + house_type + '\'' +
                 ", build_area=" + build_area +
+                ", rental_area=" + rental_area +
                 ", inner_area=" + inner_area +
                 ", aspect='" + aspect + '\'' +
                 ", decorated='" + decorated + '\'' +

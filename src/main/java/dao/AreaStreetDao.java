@@ -1,11 +1,11 @@
 package dao;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.util.CommonUtils;
 import com.util.MyFileUtils;
 import com.util.UrlReader;
-import entity.Area;
-import entity.House;
-import entity.HouseDetail;
-import entity.Street;
+import entity.*;
 import mapper.AreaMapper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.io.FileUtils;
@@ -16,7 +16,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -105,47 +104,40 @@ public class AreaStreetDao {
         }
     }
 
-    public void insertHouse(Map param){
+    public void insertHouse(House house){
 
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
             // 根据 street_code 拿到街道id
-            String code = (String) param.get("street_code");
-            int id = session.selectOne("MyMapper.selectStreetIdByCode", code);
+            int id = house.getStreet().getId();
 
-            param.put("street_id",id);
             // 录入 house数据
-            System.out.println(param);
-            session.insert("MyMapper.insertHouse", param);
+            String json1 = JSON.toJSONString(house);
+            Map<String,Object> param1 = JSONObject.parseObject(json1);
+            param1.put("street_id",house.getStreet().getId());
+            session.insert("MyMapper.insertHouse", param1);
             session.commit();
             // 查询当前录入数据的 house id
-            String link = (String) param.get("link");
+            String link = house.getLink();
             int house_id = session.selectOne("MyMapper.selectHouseByLink",link);
+            System.out.println(house_id);
             // 录入 房屋详情
+            house.setId(house_id);
+            String json = JSON.toJSONString(house.getHouseDetail());
+            Map<String,Object> param = JSONObject.parseObject(json);
             param.put("house_id",house_id);
-            System.out.println("insert insert");
-            System.out.println(xxx(param));
-            System.out.println("insert insert");
-            session.insert("MyMapper.insertHouseDetail", xxx(param));
-        }
-    }
 
-    public Map<String, Object> xxx(Map<String,Object> map){
-        Map<String,Object> tmp = new HashMap<>();
-        Map<String,String> baseInfo = (Map<String, String>) map.get("baseInfo");
-        Map<String,String> tradeInfo = (Map<String, String>) map.get("tradeInfo");
+            session.insert("MyMapper.insertHouseDetail",param);
 
-        for (String key:map.keySet() ) {
-            tmp.put(key,map.get(key));
+            Map<String,List<Map<String,String>>> param2 = new HashMap<>();
+            List<HouseImage> images = house.getHouseImages();
+            param2.put("images",images.stream().map(image->{
+                Map<String,String> imgMap = new HashMap();
+                imgMap.put("house_id",house_id + "");
+                imgMap.put("link",image.getLink());
+                return imgMap;
+            }).collect(Collectors.toList()));
+            session.insert("MyMapper.batchInsertHouseImages",param2);
         }
-        for (String key:baseInfo.keySet() ) {
-            tmp.put(key,baseInfo.get(key));
-        }
-        for (String key:tradeInfo.keySet() ) {
-            tmp.put(key,tradeInfo.get(key));
-        }
-        tmp.remove("baseInfo");
-        tmp.remove("tradeInfo");
-        return tmp;
     }
 
     public void clearStreets(){
@@ -154,7 +146,7 @@ public class AreaStreetDao {
         }
     }
 
-    public void readBigFileInsertBatch(String fileName) {
+    public void readBigFileInsertBatch(String fileName,List<Street> streets) {
         try {
             File file = new File(MyFileUtils.projectDir,"target/"+fileName);
             long count = 0;
@@ -163,56 +155,59 @@ public class AreaStreetDao {
             while (lineIterator.hasNext()) {
                 result.add(lineIterator.next());
                 if(count %100 == 0 && count != 0){
-                    xxx(result);
+                    setListHouseByListJSONString(result,streets).forEach(this::insertHouse);
                     result = new ArrayList<>();
                 }
                 count ++;
             }
-            xxx(result);
+            setListHouseByListJSONString(result,streets).forEach(this::insertHouse);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void xxx(List<String> list){
-        list.stream().forEach(item->{
+    public List<House> setListHouseByListJSONString(List<String> list,List<Street> streets){
+        return list.stream().map(item->{
             Map<String,Object> map = MyFileUtils.JsonToMap(item);
-            // previewImages
-            System.out.println(map.get("title"));
-            System.out.println(map.get("link"));
-            System.out.println(map.get("street_code"));
-            System.out.println(map.get("previewImages"));
-
             House house = new House();
             house.setTitle((String) map.get("title"));
             house.setLink((String) map.get("link"));
             house.setTotal_price(FormatStringToDouble(map,"total_price"));
             house.setSquare_metre_price(FormatStringToDouble(map,"square_metre_price"));
 
-            System.out.println(map.get("tradeInfo"));
+            // 先找到 streetId
+            Street street = new Street();
+            street.setCode((String) map.get("street_code"));
+            long streetId = streets.stream()
+                    .filter(item2->item2.getCode().equals((String) map.get("street_code")))
+                    .collect(Collectors.toList()).get(0).getId();
+            street.setId((int) streetId);
+
+            house.setStreet(street);
+
             Map<String,Object> mapHouseDetail = MyFileUtils.mergeMap((Map<String,Object>)map.get("baseInfo"),(Map<String,Object>)map.get("tradeInfo"));
-            System.out.println(mapHouseDetail);
             mapHouseDetail.put("build_area",FormatStringToDouble(mapHouseDetail,"build_area"));
             mapHouseDetail.put("inner_area",FormatStringToDouble(mapHouseDetail,"inner_area"));
             mapHouseDetail.put("gas_price",FormatStringToDouble(mapHouseDetail,"gas_price"));
-            mapHouseDetail.put("last_trade",formatDate((String) mapHouseDetail.get("last_trade")));
-            mapHouseDetail.put("listing_date",formatDate((String) mapHouseDetail.get("listing_date")));
+            mapHouseDetail.put("last_trade", CommonUtils.formatDate((String) mapHouseDetail.get("last_trade")));
+            mapHouseDetail.put("listing_date",CommonUtils.formatDate((String) mapHouseDetail.get("listing_date")));
             HouseDetail houseDetail = getHouseDetailInstanceByMapData(mapHouseDetail);
-
-            System.out.println(houseDetail);
 
             house.setHouseDetail(houseDetail);
 
-            Street street = new Street();
-            street.setCode((String) map.get("street_code"));
-            street.setId(getStreet()
-                            .stream()
-                            .filter(item2->item2.getCode().equals((String) map.get("street_code")))
-                            .collect(Collectors.toList()).get(0).getId());
-            house.setStreet(street);
+            // images
+            List<HouseImage> images;
+            List<String> imageLinks = (List<String>) map.get("previewImages");
+            images = imageLinks.stream().map(img->{
+                HouseImage imgObj = new HouseImage();
+                imgObj.setLink(img);
+                return imgObj;
+            }).collect(Collectors.toList());
+            house.setHouseImages(images);
 
-        });
+            return house;
+        }).collect(Collectors.toList());
     }
 
     private  static Double  FormatStringToDouble(Map map,String key){
@@ -238,18 +233,4 @@ public class AreaStreetDao {
             throw new RuntimeException(e);
         }
     }
-
-    public static Date formatDate(String strDate){
-        if((strDate == null) ||"-".equals(strDate) || "暂无数据".equals(strDate)){
-            return null;
-        }
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            Date date = format.parse(strDate);
-            return date;
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }
