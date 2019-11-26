@@ -6,13 +6,11 @@ drop table if exists street;
 drop table if exists area;
 SET FOREIGN_KEY_CHECKS=1;
 
-
 create table area(
   id bigint primary key auto_increment,
   name varchar(20),
   code varchar(30)
 );
-
 
 create table street (
     id bigint primary key auto_increment,
@@ -38,9 +36,8 @@ create table house_images(
   house_id bigint,
   foreign key(house_id) references house(id)
 );
-
 create table house_detail(
-    id bigint primary key auto_increment,
+--     id bigint primary key auto_increment,
 --  房屋户型
     house_type varchar(20),
 --     建筑面积(非公寓)
@@ -75,7 +72,7 @@ create table house_detail(
     water_type varchar(30),
 --     燃气价格
     gas_price varchar (30),
-
+--
 --     # 交易属性
 --     挂牌时间
     listing_date bigint,

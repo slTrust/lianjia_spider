@@ -8,5 +8,5 @@ docker run -v "$PWD/data":/var/lib/mysql --name my-mysql -e MYSQL_ROOT_PASSWORD=
 ```
 
 ```
-mvn flyway:migrate
+mvn initialize
 ```

@@ -3,6 +3,8 @@ package com.util;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CommonUtils {
 
@@ -17,5 +19,11 @@ public class CommonUtils {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String filterString(String str){
+        String regex="([a-zA-Z0-9\u4e00-\u9fa5]+)";
+        Matcher matcher = Pattern.compile(regex).matcher(str);
+        return matcher.find()?matcher.group(0):str;
     }
 }

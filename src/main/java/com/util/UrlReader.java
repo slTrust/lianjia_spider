@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class UrlReader {
     public static final AreaStreetDao areaDao = new AreaStreetDao(SqlSessionUtil.getSessionFactory());
-    public static int count = 0;
+    public static Map<String,List<Integer>> parseListSizeConfig = new HashMap<>();
     public static final int delayTime = 100;
     public static final Map<String,String> xpathExpMap = new HashMap<>();
     public static final String NODE_AREA_A = "NODE_AREA_A";
@@ -35,7 +35,6 @@ public class UrlReader {
         xpathExpMap.put(NODE_STREET_A,"//div[@data-role=\"ershoufang\"]/div[2]/a");
         xpathExpMap.put(PAGE_INFO_ATTR,"//*[@class=\"contentBottom clear\"]/div[2]/div[1]/@page-data");
         xpathExpMap.put(NODE_HOUSE_TITLE,"//div[@class=\"sellDetailHeader\"]//div[@class=\"title\"]/h1");
-//        xpathExpMap.put(NODE_HOUSE_TOTAL_PRICE,"/html/body/div[5]/div[2]/div[2]/span[1]");
         xpathExpMap.put(NODE_HOUSE_TOTAL_PRICE,"/html/body//div[@class=\"content\"]/div[@class=\"price\"]/span[@class=\"total\"]");
     }
 
@@ -212,7 +211,6 @@ public class UrlReader {
         }else if(type.equals("street_page")){
             // 读取某个街道 某页 的所有house
             String street_code = getCode(url);
-            System.out.println(street_code);
 
             List<String> urls = getHouseUrl(url)
                                     .stream()
@@ -226,12 +224,7 @@ public class UrlReader {
             String link_url = s[0];
             String street_code = s[1];
 
-            System.out.println(link_url);
             Map<String,Object> infos = getHouseDetailByUrl(link_url);
-            System.out.println("----------1");
-            System.out.println("----------2");
-            System.out.println("----------3");
-            System.out.println(infos);
             infos.put("street_code",street_code);
             infos.put("link",link_url);
             // 把房屋信息做映射  由中文--》 英文字段
@@ -328,7 +321,6 @@ public class UrlReader {
             String title = (String) getNodeOrValue(html,xpathExpMap.get(NODE_HOUSE_TITLE),"node");
 
             String total_price = (String) getNodeOrValue(html,xpathExpMap.get(NODE_HOUSE_TOTAL_PRICE),"node");
-            System.out.println(total_price);
 
             String square_metre_price = (String) getNodeOrValue(html,"/html/body//div[@class=\"content\"]/div[@class=\"price\"]//div[@class=\"unitPrice\"]/span","node");
             // 房屋图片
@@ -395,11 +387,10 @@ public class UrlReader {
 
     public static void task(List<String> list,String type) {
         try {
-//            if(type.equals("house")){
-//                list = list.subList(0,3);
-//            }else{
-//                list = list.subList(0,1);
-//            }
+            if(parseListSizeConfig.containsKey(type) && "area".equals(type)){
+                list = list.subList(parseListSizeConfig.get(type).get(0),parseListSizeConfig.get(type).get(1));
+            }
+
             CountDownLatch countDownLatch = new CountDownLatch(list.size());
             for (int i = 0; i < list.size() ; i++) {
                 Thread.sleep(new Random().nextInt(3) * delayTime);
@@ -457,13 +448,6 @@ public class UrlReader {
         return matcher.group();
     }
 
-    public static void main(String[] args) {
-
-//        step01_writeStreetUrlToFile();
-        step02_WriteHouseDetailToFile();
-//        test_step02_WriteHouseDetailToFile();
-    }
-
     public static void step01_writeStreetUrlToFile(){
         getStreetUrlByThread();
     }
@@ -472,19 +456,6 @@ public class UrlReader {
         MyFileUtils.removeFile("house_detail.txt");
         List<String> houseUrls2 = MyFileUtils.readFile("house_url.txt");
         task(houseUrls2,"house");
-    }
-
-    public static void step03_insesrtHouseDetailToDB(){
-        List<String> houseUrls2 = MyFileUtils.readFile("house_detail.txt");
-        // 批量插入 以及问题 https://blog.csdn.net/sunyanchun/article/details/89187552
-
-        /*
-        1 数据分析 图表 echart /  highcharts
-        https://cloud.tencent.com/developer/article/1477265
-
-        位置信息根据街道小区 可视化
-
-        */
     }
 
     public static void test_step02_WriteHouseDetailToFile(){

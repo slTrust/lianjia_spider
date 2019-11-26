@@ -13,6 +13,7 @@
     </properties>
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -21,6 +22,7 @@
                     <target>8</target>
                 </configuration>
             </plugin>
+
 
             <plugin>
                 <groupId>org.flywaydb</groupId>
@@ -34,13 +36,14 @@
                             <goal>migrate</goal>
                         </goals>
                         <configuration>
-                            <url>jdbc:mysql://localhost:3306/xdml</url>
+                            <url>jdbc:mysql://172.17.0.2:3306/xdml</url>
                             <user>root</user>
                             <password>my-secret-pw</password>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 

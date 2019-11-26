@@ -118,7 +118,9 @@ public class AreaStreetDao {
             session.commit();
             // 查询当前录入数据的 house id
             String link = house.getLink();
-            int house_id = session.selectOne("MyMapper.selectHouseByLink",link);
+            // 遗留问题 url不是唯一的房屋信息 同一网址存在挂牌多次的情况，这里不处理了，因为这样的数据很少
+            List<Integer> a = session.selectList("MyMapper.selectHouseByLink",link);
+            int house_id = a.get(0);
             System.out.println(house_id);
             // 录入 房屋详情
             house.setId(house_id);
@@ -136,7 +138,9 @@ public class AreaStreetDao {
                 imgMap.put("link",image.getLink());
                 return imgMap;
             }).collect(Collectors.toList()));
-            session.insert("MyMapper.batchInsertHouseImages",param2);
+            if (images.size()!=0){
+                session.insert("MyMapper.batchInsertHouseImages",param2);
+            }
         }
     }
 
@@ -171,7 +175,7 @@ public class AreaStreetDao {
         return list.stream().map(item->{
             Map<String,Object> map = MyFileUtils.JsonToMap(item);
             House house = new House();
-            house.setTitle((String) map.get("title"));
+            house.setTitle(CommonUtils.filterString((String) map.get("title")));
             house.setLink((String) map.get("link"));
             house.setTotal_price(FormatStringToDouble(map,"total_price"));
             house.setSquare_metre_price(FormatStringToDouble(map,"square_metre_price"));
