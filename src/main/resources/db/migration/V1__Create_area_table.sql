@@ -22,8 +22,9 @@ create table street (
 
 create table house (
     id bigint primary key auto_increment,
-    title varchar(30),
-    link varchar(200),
+    title varchar(60),
+    link varchar(200) unique ,
+    neighbourhoods varchar(30),
     total_price decimal(12,2),
     square_metre_price decimal(12,2),
     street_id bigint,
@@ -37,7 +38,7 @@ create table house_images(
   foreign key(house_id) references house(id)
 );
 create table house_detail(
---     id bigint primary key auto_increment,
+    id bigint primary key auto_increment,
 --  房屋户型
     house_type varchar(20),
 --     建筑面积(非公寓)
@@ -81,7 +82,7 @@ create table house_detail(
 --     房屋年限
     house_years varchar (10),
 --     抵押信息
-    mortgage varchar (30),
+    mortgage varchar (100),
 --     交易权属
     trade_right varchar(30),
 --     房屋用途
@@ -89,7 +90,7 @@ create table house_detail(
 --     产权所属
     property_owner varchar(30),
 --     房本备件
-    spare_parts varchar(30),
+    spare_parts varchar(60),
 --     hid fk 房源id
     house_id bigint,
     foreign key(house_id) references house(id)
