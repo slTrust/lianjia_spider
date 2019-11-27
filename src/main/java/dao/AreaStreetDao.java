@@ -16,7 +16,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -119,9 +118,7 @@ public class AreaStreetDao {
             // 查询当前录入数据的 house id
             String link = house.getLink();
             // 遗留问题 url不是唯一的房屋信息 同一网址存在挂牌多次的情况，这里不处理了，因为这样的数据很少
-            List<Integer> a = session.selectList("MyMapper.selectHouseByLink",link);
-            int house_id = a.get(0);
-            System.out.println(house_id);
+            int house_id  = session.selectOne("MyMapper.selectHouseByLink",link);
             // 录入 房屋详情
             house.setId(house_id);
             String json = JSON.toJSONString(house.getHouseDetail());
@@ -177,6 +174,7 @@ public class AreaStreetDao {
             House house = new House();
             house.setTitle(CommonUtils.filterString((String) map.get("title")));
             house.setLink((String) map.get("link"));
+            house.setNeighbourhoods((String)map.get("neighbourhoods"));
             house.setTotal_price(FormatStringToDouble(map,"total_price"));
             house.setSquare_metre_price(FormatStringToDouble(map,"square_metre_price"));
 

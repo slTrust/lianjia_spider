@@ -30,12 +30,14 @@ public class UrlReader {
     public static final String PAGE_INFO_ATTR = "PAGE_INFO_ATTR";
     public static final String NODE_HOUSE_TITLE = "NODE_HOUSE_TITLE";
     public static final String NODE_HOUSE_TOTAL_PRICE = "NODE_HOUSE_TOTAL_PRICE";
+    public static final String NODE_NEIGHBOURHOODS = "NODE_NEIGHBOURHOODS";
     static {
         xpathExpMap.put(NODE_AREA_A,"//div[@data-role=\"ershoufang\"]/div/a");
         xpathExpMap.put(NODE_STREET_A,"//div[@data-role=\"ershoufang\"]/div[2]/a");
         xpathExpMap.put(PAGE_INFO_ATTR,"//*[@class=\"contentBottom clear\"]/div[2]/div[1]/@page-data");
         xpathExpMap.put(NODE_HOUSE_TITLE,"//div[@class=\"sellDetailHeader\"]//div[@class=\"title\"]/h1");
         xpathExpMap.put(NODE_HOUSE_TOTAL_PRICE,"/html/body//div[@class=\"content\"]/div[@class=\"price\"]/span[@class=\"total\"]");
+        xpathExpMap.put(NODE_NEIGHBOURHOODS,"/html/body/div[5]/div[2]/div[5]/div[1]/a[1]");
     }
 
     public static final List<Area> cacheAreaInfos = new ArrayList<>();
@@ -226,7 +228,6 @@ public class UrlReader {
 
             Map<String,Object> infos = getHouseDetailByUrl(link_url);
             infos.put("street_code",street_code);
-            infos.put("link",link_url);
             // 把房屋信息做映射  由中文--》 英文字段
             mapFieldContent(infos);
             // 存入数据库
@@ -320,6 +321,8 @@ public class UrlReader {
 
             String title = (String) getNodeOrValue(html,xpathExpMap.get(NODE_HOUSE_TITLE),"node");
 
+            String neighbourhoods = (String) getNodeOrValue(html,xpathExpMap.get(NODE_NEIGHBOURHOODS),"node");
+
             String total_price = (String) getNodeOrValue(html,xpathExpMap.get(NODE_HOUSE_TOTAL_PRICE),"node");
 
             String square_metre_price = (String) getNodeOrValue(html,"/html/body//div[@class=\"content\"]/div[@class=\"price\"]//div[@class=\"unitPrice\"]/span","node");
@@ -366,6 +369,7 @@ public class UrlReader {
             }
 
             result.put("title",title);
+            result.put("neighbourhoods",neighbourhoods); // 小区名称
             result.put("total_price",total_price);
             result.put("square_metre_price",filterNum(square_metre_price));
             result.put("link",url);
@@ -420,7 +424,7 @@ public class UrlReader {
     public static List<String> getStreetUrlByThread() {
         MyFileUtils.removeFile("test.txt");
         MyFileUtils.removeFile("house_url.txt");
-
+        MyFileUtils.removeFile("house_detail.txt");
         List<Area> areas = getAreaInfos();
         if(areas.size() > 0){
             //区——任务 找到每个区的街道 并缓存
@@ -448,12 +452,11 @@ public class UrlReader {
         return matcher.group();
     }
 
-    public static void step01_writeStreetUrlToFile(){
+    public static void step01_WriteHouseDetailToFile(){
         getStreetUrlByThread();
     }
 
     public static void step02_WriteHouseDetailToFile(){
-        MyFileUtils.removeFile("house_detail.txt");
         List<String> houseUrls2 = MyFileUtils.readFile("house_url.txt");
         task(houseUrls2,"house");
     }

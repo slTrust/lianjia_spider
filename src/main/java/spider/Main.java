@@ -10,14 +10,13 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args){
-//        crawlData();
-        initData();
+        crawlData();
+//        initData();
     }
 
     private static void crawlData() {
-        UrlReader.parseListSizeConfig.put("area", Arrays.asList(0,6));
-        UrlReader.step01_writeStreetUrlToFile();
-        UrlReader.step02_WriteHouseDetailToFile();
+//        UrlReader.parseListSizeConfig.put("area", Arrays.asList(0,1));
+        UrlReader.step01_WriteHouseDetailToFile();
     }
 
     public static void initData(){

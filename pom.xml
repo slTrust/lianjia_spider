@@ -36,7 +36,7 @@
                             <goal>migrate</goal>
                         </goals>
                         <configuration>
-                            <url>jdbc:mysql://172.17.0.2:3306/xdml</url>
+                            <url>jdbc:mysql://localhost:3306/xdml</url>
                             <user>root</user>
                             <password>my-secret-pw</password>
                         </configuration>

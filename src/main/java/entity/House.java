@@ -6,6 +6,7 @@ public class House {
     private int id;
     private String title;
     private String link;
+    private String neighbourhoods;
     private Double total_price;
     private Double square_metre_price;
     private HouseDetail houseDetail;
@@ -79,12 +80,21 @@ public class House {
         this.houseImages = houseImages;
     }
 
+    public String getNeighbourhoods() {
+        return neighbourhoods;
+    }
+
+    public void setNeighbourhoods(String neighbourhoods) {
+        this.neighbourhoods = neighbourhoods;
+    }
+
     @Override
     public String toString() {
         return "House{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", link='" + link + '\'' +
+                ", neighbourhoods='" + neighbourhoods + '\'' +
                 ", total_price=" + total_price +
                 ", square_metre_price=" + square_metre_price +
                 ", houseDetail=" + houseDetail +

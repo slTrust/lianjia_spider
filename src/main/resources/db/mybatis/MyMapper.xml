@@ -54,8 +54,8 @@
     </select>
 
     <insert id="insertHouse" parameterType="map">
-        insert into house(id,title,link,total_price,square_metre_price,street_id)
-        values(null,#{title},#{link},#{total_price},#{square_metre_price},#{street_id})
+        insert ignore into house(id,title,link,neighbourhoods,total_price,square_metre_price,street_id)
+        values(null,#{title},#{link},#{neighbourhoods},#{total_price},#{square_metre_price},#{street_id})
     </insert>
 
     <select id="selectHouseByLink" parameterType="string" resultType="int">
